@@ -1,60 +1,94 @@
 # 🌌 Neon Air Draw — AI Spatial Interface
 
-A high-performance, real-time AI air drawing web application that utilizes advanced hand tracking for a "Minority Report" style spatial interface. 
-
-Draw in the air with your dominant hand and manipulate your creations in real-time with your non-dominant hand using intuitive gestures (Move, Scale, Rotate).
+A high-performance, real-time web application for drawing in the air, using advanced hand tracking. Inspired by *Minority Report*: draw in the air with your dominant hand, and modify your creations with your other hand using intuitive gestures (move, scale, rotate).
 
 ## ✨ Key Features
 
-*   **✋ Dual-Hand Interaction**: 
-    *   **Right Hand (Dominant)**: Handles high-precision drawing, selective erasing, and canvas clearing.
-    *   **Left Hand (Secondary)**: Dedicated to spatial transformations (Move, Scale, Rotate) of existing strokes.
-*   **📐 Non-Destructive Transforms**: Strokes retain their original coordinate data. All manipulations (TX, TY, Scale, Rotation) are applied at render time via matrix-based math.
-*   **🕶️ Minimalist Glassmorphism UI**: A premium, aesthetic interface with real-time HUD and visual feedback guides.
-*   **⚡ High Performance**: Native WebGL-based rendering engine optimized for 60FPS fluid interactions.
-*   **🌀 Physics-Based Interaction**: Smooth inertia on stroke movement and snap-to-angle (45°) for rotation.
-*   **📖 Gesture Guide**: Built-in interactive manual explaining every movement.
+- **✋ Dual‑hand interaction**:
+  - **Right hand (dominant)**: precise drawing, selective erasing, full canvas clearing.
+  - **Left hand (secondary)**: transform existing strokes (move, scale, rotate).
+- **📐 Non‑destructive transforms**: strokes keep their original coordinates. All modifications (position, size, rotation) are applied at render time via matrix‑based math.
+- **🕶️ Minimalist glassmorphism UI**: modern, clean design with real‑time HUD and visual guides.
+- **⚡ High performance**: WebGL rendering engine optimized for smooth 60 FPS.
+- **🌀 Physics‑based interaction**: smooth inertia when moving strokes, and snap‑to‑angle (45°) for rotation.
+- **📖 Gesture guide**: built‑in interactive manual explaining every movement.
 
 ## 🛠️ Tech Stack
 
-*   **Frontend**: React + Vite
-*   **Hand Tracking**: @mediapipe/hands
-*   **Animations**: Framer Motion
-*   **Icons**: Lucide React (with custom inline SVG fallbacks for brand icons)
-*   **Styling**: Vanilla CSS (Modern Glassmorphism & Neon Aesthetics)
+- **Frontend**: React + Vite
+- **Hand tracking**: @mediapipe/hands
+- **Animations**: Framer Motion
+- **Icons**: Lucide React (with inline SVG fallbacks for some icons)
+- **Styling**: Vanilla CSS (glassmorphism & neon effects)
 
-## 🎮 Gesture Manual
+## 🎮 Gesture Guide
 
 ### ✍️ Drawing Hand (Right Hand)
+
 | Gesture | Action |
 |---|---|
-| ☝️ **Index Up** | Start drawing a stroke |
-| 🤏 **Pinch** | Selective eraser (intersects with fingertip path) |
+| ☝️ **Index up** | Start drawing a stroke |
+| 🤏 **Pinch** | Selective eraser (where the fingertip passes) |
 | ✊ **Fist** | Clear the entire canvas |
 
 ### 🖐️ Control Hand (Left Hand)
+
 | Gesture | Action | Visual Feedback |
 |---|---|---|
-| ✌️ **Two Fingers** | **Move** nearest stroke | Blue crosshair + glow |
-| 🤏 **Pinch & Spread** | **Scale** stroke size | Concentric rings + % label |
-| 🤚 **Open Palm** | **Rotate** stroke | Orange arc + snap points |
+| ✌️ **Two fingers up** | **Move** the nearest stroke | Blue crosshair + glow |
+| 🤏 **Pinch & spread** | **Scale** the stroke | Concentric rings + percentage |
+| 🖐️ **Open palm** | **Rotate** the stroke | Orange arc + snap points |
 
 ## 🚀 Getting Started
 
-1.  **Install Dependencies**:
-    ```bash
-    npm install
-    ```
-2.  **Run Development Server**:
-    ```bash
-    npm run dev
-    ```
-3.  **Use**: Grant camera permissions and raise your hands in view!
+1. **Install dependencies**:
+   ```bash
+   npm install
+# 🌌 Neon Air Draw — Interface Spatiale à Intelligence Artificielle
 
-## 👨‍💻 Developer
-**Akshat Singh**  
-📸 Instagram: [@code.akshat.in](https://www.instagram.com/code.akshat.in/)  
-🐙 GitHub: [Axshatt](https://github.com/Axshatt)
+Une application web de dessin dans l'air, rapide et temps réel, qui utilise le suivi avancé des mains. Inspirée du film *Minority Report* : dessinez dans l’air avec votre main dominante, et modifiez vos créations avec l’autre main grâce à des gestes intuitifs (déplacer, redimensionner, pivoter).
 
----
-*Built with passion for AI and Spatial Computing.*
+## ✨ Fonctionnalités principales
+
+- **✋ Interaction avec les deux mains** :
+  - **Main droite (dominante)** : dessin précis, effacement sélectif, nettoyage complet du canvas.
+  - **Main gauche (secondaire)** : transformation des traits existants (déplacer, mettre à l’échelle, pivoter).
+- **📐 Transformations non destructives** : les traits gardent leurs coordonnées d’origine. Les modifications (position, taille, rotation) sont appliquées à l’affichage avec des calculs mathématiques (matrices).
+- **🕶️ Interface minimaliste « glassmorphism »** : design moderne et épuré, avec des informations en temps réel et des guides visuels.
+- **⚡ Hautes performances** : moteur de rendu WebGL optimisé pour un affichage fluide à 60 images par seconde.
+- **🌀 Interactions physiques** : inertie douce lors du déplacement des traits, et accrochage automatique à des angles tous les 45° pour la rotation.
+- **📖 Guide des gestes** : un manuel interactif intégré qui explique chaque mouvement.
+
+## 🛠️ Technologies utilisées
+
+- **Frontend** : React + Vite
+- **Suivi des mains** : @mediapipe/hands
+- **Animations** : Framer Motion
+- **Icônes** : Lucide React (avec des solutions de secours SVG pour certaines icônes)
+- **Styles** : CSS pur (effet glassmorphism et néon)
+
+## 🎮 Guide des gestes
+
+### ✍️ Main qui dessine (main droite)
+
+| Geste | Action |
+|---|---|
+| ☝️ **Index levé** | Commencer à tracer un trait |
+| 🤏 **Pincement** | Effacement sélectif (là où passe le bout du doigt) |
+| ✊ **Poing fermé** | Effacer tout le canvas |
+
+### 🖐️ Main de contrôle (main gauche)
+
+| Geste | Action | Retour visuel |
+|---|---|---|
+| ✌️ **Deux doigts levés** | **Déplacer** le trait le plus proche | Croix bleue + lueur |
+| 🤏 **Pincer et écarter** | **Redimensionner** le trait | Cercles concentriques + pourcentage |
+| 🖐️ **Main ouverte** | **Pivoter** le trait | Arc orange + points d’accrochage |
+
+## 🚀 Comment démarrer
+
+1. **Installer les dépendances** :
+   ```bash
+   npm install
+
+
