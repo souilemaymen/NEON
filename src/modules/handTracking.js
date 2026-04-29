@@ -1,11 +1,11 @@
-// Using global MediaPipe from CDN (added in index.html) to avoid Vite bundling issues
+// Using global MediaPipe from CDN (added in index.html)
 const getHandsConstructor = () => {
   if (typeof window !== 'undefined' && window.Hands) return window.Hands;
   return null;
 };
 
 export class HandTracker {
-  constructor(onResults) {
+  constructor(onResults, options = {}) {
     const HandsConstructor = getHandsConstructor();
     if (!HandsConstructor) {
       console.error('MediaPipe Hands not found. Ensure @mediapipe/hands is installed or CDN is loaded.');
@@ -18,17 +18,23 @@ export class HandTracker {
       },
     });
 
+    // Options ultra-rapides pour le tracking
     this.hands.setOptions({
       maxNumHands: 2,
-      modelComplexity: 1,
-      minDetectionConfidence: 0.5,
-      minTrackingConfidence: 0.5,
+      modelComplexity: 0,            // le plus rapide (lite)
+      minDetectionConfidence: 0.3,
+      minTrackingConfidence: 0.4,
+      selfieMode: false,             // désactive le miroir si possible
     });
 
     this.hands.onResults(onResults);
+
+    // Pas de throttling : on traite chaque frame immédiatement
+    // (optionnel: vous pouvez garder un champ pour fps limit, mais déconseillé)
   }
 
   async send(image) {
+    // Envoi immédiat pour une latence minimale
     await this.hands.send({ image });
   }
 
@@ -40,9 +46,6 @@ export class HandTracker {
   }
 
   static isFingerUp(landmarks, fingerIndex) {
-    // MediaPipe Hand Landmarks: 
-    // Thumb: 4, Index: 8, Middle: 12, Ring: 16, Pinky: 20
-    // Tip is further up (y is smaller) than the PIP joint (tip-2)
     const tip = landmarks[fingerIndex * 4 + 4];
     const pip = landmarks[fingerIndex * 4 + 2];
     return tip.y < pip.y;

@@ -14,11 +14,8 @@ const DrawingCanvas = forwardRef(({
   const interactionRef = useRef(null);
   const transformRef = useRef(null);
 
-  // Current in-progress path
   const currentPathRef = useRef(null);
   const lastPointRef = useRef(null);
-
-  // Track control gesture for rendering
   const controlGestureRef = useRef('CTRL_IDLE');
 
   useImperativeHandle(ref, () => ({
@@ -59,7 +56,6 @@ const DrawingCanvas = forwardRef(({
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
     };
-
     window.addEventListener('resize', handleResize);
     return () => {
       window.removeEventListener('resize', handleResize);
@@ -68,7 +64,7 @@ const DrawingCanvas = forwardRef(({
   }, []);
 
   const saveCurrentPath = () => {
-    if (currentPathRef.current) {
+    if (currentPathRef.current && currentPathRef.current.points.length > 0) {
       managerRef.current.addStroke(
         currentPathRef.current.points,
         currentPathRef.current.color,
@@ -80,7 +76,7 @@ const DrawingCanvas = forwardRef(({
     }
   };
 
-  // === PRIMARY HAND: Drawing gestures ===
+  // PRIMARY HAND – dessin immédiat (pas de seuil de distance)
   useEffect(() => {
     if (!landmark || !managerRef.current || !interactionRef.current) return;
 
@@ -95,14 +91,14 @@ const DrawingCanvas = forwardRef(({
             color: settings.color,
             lineWidth: settings.lineWidth,
             glowIntensity: settings.glowIntensity,
+            transform: { tx: 0, ty: 0, scale: 1, rotation: 0 },
+            transformDirty: true,
           };
           lastPointRef.current = { x, y };
         } else {
-          const smoothFactor = 0.15;
-          const smoothedX = lastPointRef.current.x * smoothFactor + x * (1 - smoothFactor);
-          const smoothedY = lastPointRef.current.y * smoothFactor + y * (1 - smoothFactor);
-          currentPathRef.current.points.push({ x: smoothedX, y: smoothedY });
-          lastPointRef.current = { x: smoothedX, y: smoothedY };
+          // Ajout sans condition de distance (temps réel)
+          currentPathRef.current.points.push({ x, y });
+          lastPointRef.current = { x, y };
         }
         break;
 
@@ -122,7 +118,7 @@ const DrawingCanvas = forwardRef(({
     }
   }, [gesture, landmark, settings]);
 
-  // === SECONDARY HAND: Control gestures (move/scale/rotate) ===
+  // SECONDARY HAND – transformations
   useEffect(() => {
     if (!transformRef.current) return;
     controlGestureRef.current = controlGesture || 'CTRL_IDLE';
@@ -139,18 +135,14 @@ const DrawingCanvas = forwardRef(({
       case 'CTRL_MOVE':
         transformRef.current.handleMove(x, y);
         break;
-
       case 'CTRL_SCALE':
-        // First, select nearest if not already selected
         transformRef.current.selectNearest(x, y);
         transformRef.current.handleScale(controlPinchDelta || 0);
         break;
-
       case 'CTRL_ROTATE':
         transformRef.current.selectNearest(x, y);
         transformRef.current.handleRotate(controlAngleDelta || 0);
         break;
-
       default:
         transformRef.current.releaseAll();
         break;
