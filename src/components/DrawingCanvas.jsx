@@ -4,25 +4,68 @@ import { StrokeManager } from '../modules/strokeManager';
 import { InteractionEngine } from '../modules/interactionEngine';
 import { TransformEngine } from '../modules/transformEngine';
 
-const DrawingCanvas = forwardRef(({ 
-  settings, gesture, landmark,
-  controlGesture, controlLandmark, controlPinchDelta, controlAngleDelta
-}, ref) => {
+const DrawingCanvas = forwardRef(({ settings }, ref) => {
   const canvasRef = useRef(null);
   const engineRef = useRef(null);
   const managerRef = useRef(null);
   const interactionRef = useRef(null);
   const transformRef = useRef(null);
-
   const currentPathRef = useRef(null);
-  const lastPointRef = useRef(null);
   const controlGestureRef = useRef('CTRL_IDLE');
 
   useImperativeHandle(ref, () => ({
-    clear: () => managerRef.current?.clear(),
+    // --- Dessin ---
+    addDrawPoint: (x, y) => {
+      if (!currentPathRef.current) {
+        currentPathRef.current = {
+          points: [{ x, y }],
+          color: settings.color,
+          lineWidth: settings.lineWidth,
+          glowIntensity: settings.glowIntensity,
+          transform: { tx: 0, ty: 0, scale: 1, rotation: 0 },
+          transformDirty: true,
+        };
+      } else {
+        currentPathRef.current.points.push({ x, y });
+      }
+    },
+    endDrawStroke: () => {
+      if (currentPathRef.current && currentPathRef.current.points.length > 0) {
+        managerRef.current.addStroke(
+          currentPathRef.current.points,
+          settings.color,
+          settings.lineWidth,
+          settings.glowIntensity
+        );
+        currentPathRef.current = null;
+      }
+    },
+    eraseAt: (x, y) => {
+      if (currentPathRef.current) {
+        // Terminer le trait en cours avant d'effacer
+        if (currentPathRef.current.points.length > 0) {
+          managerRef.current.addStroke(
+            currentPathRef.current.points,
+            settings.color,
+            settings.lineWidth,
+            settings.glowIntensity
+          );
+          currentPathRef.current = null;
+        }
+      }
+      interactionRef.current?.handleErase(x, y);
+    },
+    clearAll: () => managerRef.current?.clear(),
     undo: () => managerRef.current?.undo(),
     redo: () => managerRef.current?.redo(),
     save: () => engineRef.current?.saveAsImage(),
+
+    // --- Contrôle (main gauche) ---
+    setControlGesture: (gesture) => { controlGestureRef.current = gesture; },
+    moveControl: (x, y) => transformRef.current?.handleMove(x, y),
+    scaleControl: (delta) => transformRef.current?.handleScale(delta),
+    rotateControl: (delta) => transformRef.current?.handleRotate(delta),
+    releaseControl: () => transformRef.current?.releaseAll(),
   }));
 
   useEffect(() => {
@@ -38,9 +81,7 @@ const DrawingCanvas = forwardRef(({
     let animationFrameId;
     const renderLoop = () => {
       if (engineRef.current && managerRef.current) {
-        const selectedId = transformRef.current?.getSelectedStrokeId() 
-          ?? interactionRef.current?.getSelectedStrokeId() 
-          ?? null;
+        const selectedId = transformRef.current?.getSelectedStrokeId() ?? null;
         engineRef.current.draw(
           managerRef.current.getAllStrokes(),
           currentPathRef.current,
@@ -62,92 +103,6 @@ const DrawingCanvas = forwardRef(({
       cancelAnimationFrame(animationFrameId);
     };
   }, []);
-
-  const saveCurrentPath = () => {
-    if (currentPathRef.current && currentPathRef.current.points.length > 0) {
-      managerRef.current.addStroke(
-        currentPathRef.current.points,
-        currentPathRef.current.color,
-        currentPathRef.current.lineWidth,
-        currentPathRef.current.glowIntensity
-      );
-      currentPathRef.current = null;
-      lastPointRef.current = null;
-    }
-  };
-
-  // PRIMARY HAND – dessin immédiat (pas de seuil de distance)
-  useEffect(() => {
-    if (!landmark || !managerRef.current || !interactionRef.current) return;
-
-    const x = (1 - landmark.x) * canvasRef.current.width;
-    const y = landmark.y * canvasRef.current.height;
-
-    switch (gesture) {
-      case 'DRAW':
-        if (!currentPathRef.current) {
-          currentPathRef.current = {
-            points: [{ x, y }],
-            color: settings.color,
-            lineWidth: settings.lineWidth,
-            glowIntensity: settings.glowIntensity,
-            transform: { tx: 0, ty: 0, scale: 1, rotation: 0 },
-            transformDirty: true,
-          };
-          lastPointRef.current = { x, y };
-        } else {
-          // Ajout sans condition de distance (temps réel)
-          currentPathRef.current.points.push({ x, y });
-          lastPointRef.current = { x, y };
-        }
-        break;
-
-      case 'ERASE':
-        saveCurrentPath();
-        interactionRef.current.handleErase(x, y);
-        break;
-
-      case 'CLEAR':
-        saveCurrentPath();
-        managerRef.current.clear();
-        break;
-
-      default:
-        saveCurrentPath();
-        break;
-    }
-  }, [gesture, landmark, settings]);
-
-  // SECONDARY HAND – transformations
-  useEffect(() => {
-    if (!transformRef.current) return;
-    controlGestureRef.current = controlGesture || 'CTRL_IDLE';
-
-    if (!controlLandmark) {
-      transformRef.current.releaseAll();
-      return;
-    }
-
-    const x = (1 - controlLandmark.x) * canvasRef.current.width;
-    const y = controlLandmark.y * canvasRef.current.height;
-
-    switch (controlGesture) {
-      case 'CTRL_MOVE':
-        transformRef.current.handleMove(x, y);
-        break;
-      case 'CTRL_SCALE':
-        transformRef.current.selectNearest(x, y);
-        transformRef.current.handleScale(controlPinchDelta || 0);
-        break;
-      case 'CTRL_ROTATE':
-        transformRef.current.selectNearest(x, y);
-        transformRef.current.handleRotate(controlAngleDelta || 0);
-        break;
-      default:
-        transformRef.current.releaseAll();
-        break;
-    }
-  }, [controlGesture, controlLandmark, controlPinchDelta, controlAngleDelta]);
 
   return (
     <canvas
